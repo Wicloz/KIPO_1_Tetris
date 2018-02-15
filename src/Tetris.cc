@@ -543,8 +543,24 @@ void getRandomPiece(PieceName &piece) {
     }//switch
 }//getRandomPiece
 
-//play a random game
+// Play a random game
 void Tetris::playRandomGame(bool output) {
+    playGameSkeleton(output, &randomGameDetermineBest);
+}
+
+// Play a 'smart' game by looking at optimal piece placement
+void Tetris::playSmartGame(bool output) {
+    playGameSkeleton(output, &smartGameDetermineBest);
+}
+
+// Play a 'smarter' game using monte carlo piece placement
+void Tetris::playSmarterGame(bool output) {
+    playGameSkeleton(output, &smarterGameDetermineBest);
+}
+
+// Skeleton for playing games using different strategies
+void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&, double&)) {
+    // Print information
     if (output) {
         displayBoard();
     }
@@ -554,134 +570,84 @@ void Tetris::playRandomGame(bool output) {
         PieceName randomPiece;
         getRandomPiece(randomPiece);
 
-        // Get a random option
+        // Determine best move
+        int bestOrientation;
+        int bestPosition;
+        double extra = 0;
+        callback(*this, randomPiece, bestOrientation, bestPosition, extra);
+
+        // Do best move
+        dropPiece(randomPiece, bestOrientation, bestPosition);
+        clearFullRows();
+
+        // Print information
+        if (output) {
+            int nr, emp;
+            bool therow[wMAX];
+            printInfoCurrentPiece(randomPiece, bestOrientation, bestPosition);
+            displayBoard();
+            topRow(therow, nr, emp);
+            if (nr != -1)
+                cout << "Top row " << nr << " has " << emp << " empties" << endl;
+        }
+    }
+}
+
+// Strategy for random games
+static void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
+    tetris.randomChoice(randomPiece, bestOrientation, bestPosition);
+}
+
+// Strategy for smart games
+static void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
+    int bestScore = INT_MAX;
+    for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
         int orientation;
         int position;
-        randomChoice(randomPiece, orientation, position);
+        tetris.computeOrAndPos(randomPiece, orientation, position, i);
 
-        // Do move
-        dropPiece(randomPiece, orientation, position);
-        clearFullRows();
+        Tetris newBoard = tetris;
+        newBoard.dropPiece(randomPiece, orientation, position);
+        int score = newBoard.getSmartScore();
 
-        // Print information
-        if (output) {
-            int nr, emp;
-            bool therow[wMAX];
-            printInfoCurrentPiece(randomPiece, orientation, position);
-            displayBoard();
-            topRow(therow, nr, emp);
-            if (nr != -1)
-                cout << "Top row " << nr << " has " << emp << " empties" << endl;
+        if (score < bestScore) {
+            bestScore = score;
+            bestOrientation = orientation;
+            bestPosition = position;
         }
     }
 }
 
-//play a 'smart' game by looking at optimal piece placement
-void Tetris::playSmartGame(bool output) {
-    if (output) {
-        displayBoard();
-    }
+// Strategy for Monte Carlo games
+static void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
+    double bestScore = 0;
 
-    while (!endOfGame()) {
-        // Get a random piece
-        PieceName randomPiece;
-        getRandomPiece(randomPiece);
+    for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
+        int orientation;
+        int position;
+        tetris.computeOrAndPos(randomPiece, orientation, position, i);
 
-        // Track best move
-        int bestScore = INT_MAX;
-        int bestOrientation;
-        int bestPosition;
-
-        // Determine best move
-        for (int i = 0; i < possibilities(randomPiece); ++i) {
-            int orientation;
-            int position;
-            computeOrAndPos(randomPiece, orientation, position, i);
-
-            Tetris newBoard = *this;
-            newBoard.dropPiece(randomPiece, orientation, position);
-            int score = newBoard.getSmartScore();
-
-            if (score < bestScore) {
-                bestScore = score;
-                bestOrientation = orientation;
-                bestPosition = position;
-            }
+        double score = 0.0;
+        for (int j = 0; j < numEvals; ++j) {
+            Tetris clone = tetris;
+            clone.dropPiece(randomPiece, orientation, position);
+            clone.clearFullRows();
+            clone.playRandomGame(false);
+            score += clone.piececount;
+            // If current score is way too low, stop iterating on this position
+            if (j != 0 && score/j < bestScore-avgScore/4)
+                break;
         }
-
-        // Do best move
-        dropPiece(randomPiece, bestOrientation, bestPosition);
-        clearFullRows();
-
-        // Print information
-        if (output) {
-            int nr, emp;
-            bool therow[wMAX];
-            printInfoCurrentPiece(randomPiece, bestOrientation, bestPosition);
-            displayBoard();
-            topRow(therow, nr, emp);
-            if (nr != -1)
-                cout << "Top row " << nr << " has " << emp << " empties" << endl;
+        if (score/numEvals > bestScore) {
+            bestScore = score/numEvals;
+            avgScore += (bestScore-avgScore)/1.5;
+            bestOrientation = orientation;
+            bestPosition = position;
         }
     }
 }
 
-//play a 'smarter' game using monte carlo piece placement
-void Tetris::playSmarterGame(bool output) {
-    if (output) {
-        displayBoard();
-    }
-
-    while (!endOfGame()) {
-        // Get a random piece
-        PieceName randomPiece;
-        getRandomPiece(randomPiece);
-
-        // Track best move
-        int bestScore = 0;
-        int bestOrientation;
-        int bestPosition;
-
-        // Determine best move
-        for (int i = 0; i < possibilities(randomPiece); ++i) {
-            int orientation;
-            int position;
-            computeOrAndPos(randomPiece, orientation, position, i);
-
-            int score = 0;
-            for (int j = 0; j < numEvals; ++j) {
-                Tetris clone = *this;
-                clone.dropPiece(randomPiece, orientation, position);
-                clone.clearFullRows();
-                clone.playRandomGame(false);
-                score += clone.piececount;
-            }
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestOrientation = orientation;
-                bestPosition = position;
-            }
-        }
-
-        // Do best move
-        dropPiece(randomPiece, bestOrientation, bestPosition);
-        clearFullRows();
-
-        // Print information
-        if (output) {
-            int nr, emp;
-            bool therow[wMAX];
-            printInfoCurrentPiece(randomPiece, bestOrientation, bestPosition);
-            displayBoard();
-            topRow(therow, nr, emp);
-            if (nr != -1)
-                cout << "Top row " << nr << " has " << emp << " empties" << endl;
-        }
-    }
-}
-
-// Get the score for this board to use in playSmartGame, higher is worse
+// Get the score for this board to use in smart games, higher is worse
 int Tetris::getSmartScore() {
     int highest = h - 1;
     while (numberOfEmpties(highest) == w && highest > 0) {

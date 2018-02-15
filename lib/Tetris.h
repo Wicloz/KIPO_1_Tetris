@@ -51,11 +51,19 @@ public:
 
     int getSmartScore();
 
+    void playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&, double&));
+
     void playRandomGame(bool output);
 
     void playSmartGame(bool output);
 
     void playSmarterGame(bool output);
+
+    static void randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
+
+    static void smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
+
+    static void smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
 };
 
 #endif //TETRIS_TETRIS_H
