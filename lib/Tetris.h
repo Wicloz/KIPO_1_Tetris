@@ -50,13 +50,11 @@ public:
 
     int getSmartScore();
 
-    void playRandomGame();
+    void playRandomGame(bool output);
 
-    void playSmartGame();
+    void playSmartGame(bool output);
 
-    void playSmarterGame();
-
-    void playRandomSilentGame(int &score, PieceName piece, int orientation, int position);
+    void playSmarterGame(bool output);
 };
 
 #endif //TETRIS_TETRIS_H
