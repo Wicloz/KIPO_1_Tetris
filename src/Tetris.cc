@@ -18,7 +18,7 @@
 //
 // The program generates a random series of pieces, and then needs
 // an orientation and position (random in this version, see the function
-// playrandomgame ( )); the piece then drops as required. 
+// playRandomGame ( )); the piece then drops as required.
 // After that rows are cleared, and the board is displayed.
 //
 // The board is of size h (height) times w (width);
@@ -27,9 +27,9 @@
 //
 // If you have a piece, the function possibilities returns the number
 // of possible moves p. These moves are denoted by 0,1,...,p-1. Given 
-// a number n in this range, the function computeorandpos then computes
+// a number n in this range, the function computeOrAndPos then computes
 // the corresponding orientation and position. These can be used in
-// the function letitfall to drop the piece.
+// the function dropPiece to drop the piece.
 //
 
 //
@@ -102,23 +102,23 @@ void Tetris::statistics() {
 }//Tetris::statistics
 
 // how many empties has row numberrow?
-int Tetris::numberempties(int numberrow) {
+int Tetris::numberOfEmpties(int numberrow) {
     int j, theempties = w;
     for (j = 0; j < w; j++)
         if (board[numberrow][j])
             theempties--;
     return theempties;
-}//Tetris::numberempties
+}//Tetris::numberOfEmpties
 
 // gives number of empties in heighest non-empty row,
 // and copies this row into therow; its row index being numberrow
 // if this is -1, the whole field is empty
-void Tetris::toprow(bool therow[wMAX], int &numberrow, int &empties) {
+void Tetris::topRow(bool *therow, int &numberrow, int &empties) {
     int i, j, theempties;
     numberrow = -1;
     empties = w;
     for (i = 0; i < h; i++) {
-        theempties = numberempties(i);
+        theempties = numberOfEmpties(i);
         if (theempties < w) {
             for (j = 0; j < w; j++)
                 therow[j] = board[i][j];
@@ -126,10 +126,10 @@ void Tetris::toprow(bool therow[wMAX], int &numberrow, int &empties) {
             numberrow = i;
         }//if
     }//for
-}//Tetris::toprow
+}//Tetris::topRow
 
 // checks for full rows --- and removes them
-void Tetris::clearrows() {
+void Tetris::clearFullRows() {
     int i, j, k;
     bool full;
     for (i = h - 2; i >= 0; i--) {
@@ -150,10 +150,10 @@ void Tetris::clearrows() {
                 board[h - 1][j] = false;
         }//if
     }//for
-}//Tetris::clearrows
+}//Tetris::clearFullRows
 
 // displays current board on the screen
-void Tetris::displayboard() {
+void Tetris::displayBoard() {
     int i, j;
     for (i = h - 1; i >= 0; i--) {
         if (i < h - 3)
@@ -177,11 +177,11 @@ void Tetris::displayboard() {
     for (j = 0; j < w; j++)
         cout << j % 10;
     cout << endl;
-}//Tetris::displayboard
+}//Tetris::displayBoard
 
 // let piece fall in position and orientation given
 // assume it still fits in top rows
-void Tetris::letitfall(PieceName piece, int orientation, int position) {
+void Tetris::dropPiece(PieceName piece, int orientation, int position) {
     int x[4] = {0};
     int y[4] = {0};
     int i;
@@ -410,10 +410,10 @@ void Tetris::letitfall(PieceName piece, int orientation, int position) {
             y[i]--;
     for (i = 0; i < 4; i++)
         board[y[i]][x[i]] = true;
-}//Tetris::letitfall
+}//Tetris::dropPiece
 
 // give piece a chance: info to the screen
-void Tetris::infothrowpiece(PieceName piece, int orientation, int position) {
+void Tetris::printInfoCurrentPiece(PieceName piece, int orientation, int position) {
     int j;
     cout << endl;
     for (j = 0; j < w + 5; j++)
@@ -449,16 +449,16 @@ void Tetris::infothrowpiece(PieceName piece, int orientation, int position) {
             break;
     }//switch
     cout << orientation << " " << position << endl;
-}//Tetris::infothrowpiece
+}//Tetris::printInfoCurrentPiece
 
 // check whether top 3 rows are somewhat occupied (so game has ended?)
-bool Tetris::endofgame() {
+bool Tetris::endOfGame() {
     int j;
     for (j = 0; j < w; j++)
         if (board[h - 3][j])
             return true;
     return false;
-}//Tetris::endofgame
+}//Tetris::endOfGame
 
 // how many possibilities has piece?
 int Tetris::possibilities(PieceName piece) {
@@ -471,7 +471,7 @@ int Tetris::possibilities(PieceName piece) {
 }//Tetris::possibilities
 
 // compute orientation and position for move themove from piece
-void Tetris::computeorandpos(PieceName piece, int &orientation, int &position, int themove) {
+void Tetris::computeOrAndPos(PieceName piece, int &orientation, int &position, int themove) {
     orientation = 0;
     position = themove;
     switch (piece) {
@@ -507,16 +507,16 @@ void Tetris::computeorandpos(PieceName piece, int &orientation, int &position, i
             }//if
             break;
     }//switch
-}//Tetris::computeorandpos
+}//Tetris::computeOrAndPos
 
 // now choose (random) orientation and position for piece
-void Tetris::randomchoice(PieceName piece, int &orientation, int &position) {
+void Tetris::randomChoice(PieceName piece, int &orientation, int &position) {
     int themove = rand() % possibilities(piece);
-    computeorandpos(piece, orientation, position, themove);
-}//Tetris::randomchoice
+    computeOrAndPos(piece, orientation, position, themove);
+}//Tetris::randomChoice
 
 // generate a random piece
-void getrandompiece(PieceName &piece) {
+void getRandomPiece(PieceName &piece) {
     int intpiece = rand() % 7;
     switch (intpiece) {
         case 0:
@@ -541,29 +541,40 @@ void getrandompiece(PieceName &piece) {
             piece = RG;
             break;
     }//switch
-}//getrandompiece
+}//getRandomPiece
 
 //play a random game
-void Tetris::playrandomgame() {
+void Tetris::playRandomGame() {
     PieceName piece;
     int orientation;
     int position;
     int nr, emp;
     bool therow[wMAX];
-    displayboard();
-    while (!endofgame()) {
-        getrandompiece(piece);                    // obtain some piece
-        randomchoice(piece, orientation, position); // how to drop it?
-        letitfall(piece, orientation, position);    // let it go
-        clearrows();                             // clear rows
+    displayBoard();
+    while (!endOfGame()) {
+        getRandomPiece(piece);                    // obtain some piece
+        randomChoice(piece, orientation, position); // how to drop it?
+        dropPiece(piece, orientation, position);    // let it go
+        clearFullRows();                             // clear rows
 
         // the following output lines can be easily removed
-        infothrowpiece(piece, orientation, position);  // some text
-        displayboard();                          // print the board
-        toprow(therow, nr, emp);                    // how is top row?
+        printInfoCurrentPiece(piece, orientation, position);  // some text
+        displayBoard();                          // print the board
+        topRow(therow, nr, emp);                    // how is top row?
         if (nr != -1)
             cout << "Top row " << nr << " has " << emp << " empties" << endl;
     }//while
-}//Tetris::playrandomgame
+}
+
+//play a 'smart' game by looking at optimal piece placement
+void Tetris::playSmartGame() {
+
+}
+
+//play a 'smarter' game using monte carlo piece placement
+void Tetris::playSmarterGame() {
+
+}
+//Tetris::playRandomGame
 
 

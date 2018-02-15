@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     else
         srand(atoi(argv[3]));
 
-    board.playrandomgame();
+    board.playRandomGame();
     board.statistics();
 
     return 0;

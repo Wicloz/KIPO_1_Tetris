@@ -1,7 +1,3 @@
-//
-// Created by hermes on 28-1-18.
-//
-
 #ifndef TETRIS_TETRIS_H
 #define TETRIS_TETRIS_H
 
@@ -25,15 +21,15 @@ private:
     int piececount;         // number of pieces that has been used so far
     int rowscleared;        // number of rows cleared so far
 public:
-    void clearrows();
+    void clearFullRows();
 
-    void displayboard();
+    void displayBoard();
 
-    void letitfall(PieceName piece, int orientation, int position);
+    void dropPiece(PieceName piece, int orientation, int position);
 
-    void infothrowpiece(PieceName piece, int orientation, int position);
+    void printInfoCurrentPiece(PieceName piece, int orientation, int position);
 
-    bool endofgame();
+    bool endOfGame();
 
     Tetris(int height, int width);
 
@@ -43,15 +39,19 @@ public:
 
     int possibilities(PieceName piece);
 
-    void computeorandpos(PieceName piece, int &orientation, int &position, int themove);
+    void computeOrAndPos(PieceName piece, int &orientation, int &position, int themove);
 
-    void randomchoice(PieceName piece, int &orientation, int &position);
+    void randomChoice(PieceName piece, int &orientation, int &position);
 
-    void toprow(bool therow[wMAX], int &numberrow, int &empties);
+    void topRow(bool *therow, int &numberrow, int &empties);
 
-    int numberempties(int numberrow);
+    int numberOfEmpties(int numberrow);
 
-    void playrandomgame();
-};//Tetris
+    void playRandomGame();
+
+    void playSmartGame();
+
+    void playSmarterGame();
+};
 
 #endif //TETRIS_TETRIS_H
