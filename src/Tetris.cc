@@ -632,10 +632,11 @@ void Tetris::playSmarterGame(bool output) {
     int position;
     int nr, emp;
     bool theRow[wMAX];
-    displayBoard();
+    if (output)
+        displayBoard();
     while (!endOfGame()) {
         getRandomPiece(piece);
-        randomChoice(piece, orientation, position); // how to drop it
+        randomChoice(piece, orientation, position); //placeholder choice
 
         bestScore = 0;
         for (int i = 0; i < possibilities(piece); ++i) {
@@ -658,12 +659,13 @@ void Tetris::playSmarterGame(bool output) {
         dropPiece(piece, orientation, position);    // let it go
         clearFullRows();                            // clear rows
 
-        // the following output lines can be easily removed
-        printInfoCurrentPiece(piece, orientation, position);  // some text
-        displayBoard();                          // print the board
-        topRow(theRow, nr, emp);                    // how is top row?
-        if (nr != -1)
-            cout << "Top row " << nr << " has " << emp << " empties" << endl;
+        if (output) {
+            printInfoCurrentPiece(piece, orientation, position);  // some text
+            displayBoard();                          // print the board
+            topRow(theRow, nr, emp);                    // how is top row?
+            if (nr != -1)
+                cout << "Top row " << nr << " has " << emp << " empties" << endl;
+        }
     }
 
 }
