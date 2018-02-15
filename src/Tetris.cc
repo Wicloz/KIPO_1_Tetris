@@ -18,7 +18,7 @@
 //
 // The program generates a random series of pieces, and then needs
 // an orientation and position (random in this version, see the function
-// playRandomGame ( )); the piece then drops as required.
+// playRandomSilentGame ( )); the piece then drops as required.
 // After that rows are cleared, and the board is displayed.
 //
 // The board is of size h (height) times w (width);
@@ -549,7 +549,7 @@ void Tetris::playRandomGame() {
     int orientation;
     int position;
     int nr, emp;
-    bool therow[wMAX];
+    bool theRow[wMAX];
     displayBoard();
     while (!endOfGame()) {
         getRandomPiece(piece);                    // obtain some piece
@@ -560,10 +560,25 @@ void Tetris::playRandomGame() {
         // the following output lines can be easily removed
         printInfoCurrentPiece(piece, orientation, position);  // some text
         displayBoard();                          // print the board
-        topRow(therow, nr, emp);                    // how is top row?
+        topRow(theRow, nr, emp);                    // how is top row?
         if (nr != -1)
             cout << "Top row " << nr << " has " << emp << " empties" << endl;
-    }//while
+    }
+}
+
+void Tetris::playRandomSilentGame(int &score, PieceName piece, int orientation, int position) {
+    //First move
+    dropPiece(piece, orientation, position);    // let it go
+    clearFullRows();
+
+    //Rest of game
+    while (!endOfGame()) {
+        score++;
+        getRandomPiece(piece);                    // obtain some piece
+        randomChoice(piece, orientation, position); // how to drop it?
+        dropPiece(piece, orientation, position);    // let it go
+        clearFullRows();                             // clear rows
+    }
 }
 
 //play a 'smart' game by looking at optimal piece placement
@@ -613,6 +628,45 @@ void Tetris::playSmartGame() {
 
 //play a 'smarter' game using monte carlo piece placement
 void Tetris::playSmarterGame() {
+    const int numEvals = 1000;
+    int bestScore;
+    int newOrientation;
+    int newPosition;
+    PieceName piece;
+    int orientation;
+    int position;
+    int nr, emp;
+    bool theRow[wMAX];
+    displayBoard();
+    while (!endOfGame()) {
+        getRandomPiece(piece);
+        randomChoice(piece, orientation, position); // how to drop it
+
+        bestScore = 0;
+        for (int i = 0; i < possibilities(piece); ++i) {
+            computeOrAndPos(piece, newOrientation, newPosition, i);
+            int newScore = 0;
+            for (int j = 0; j < numEvals; ++j) {
+                auto *clone = new Tetris(this);
+                clone->playRandomSilentGame(newScore, piece, newOrientation, newPosition);
+            }
+            if (newScore > bestScore) {
+                bestScore = newScore;
+                orientation = newOrientation;
+                position = newPosition;
+            }
+        }
+
+        dropPiece(piece, orientation, position);    // let it go
+        clearFullRows();                            // clear rows
+
+        // the following output lines can be easily removed
+        printInfoCurrentPiece(piece, orientation, position);  // some text
+        displayBoard();                          // print the board
+        topRow(theRow, nr, emp);                    // how is top row?
+        if (nr != -1)
+            cout << "Top row " << nr << " has " << emp << " empties" << endl;
+    }
 
 }
 

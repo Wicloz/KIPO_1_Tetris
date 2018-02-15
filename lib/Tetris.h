@@ -36,7 +36,7 @@ public:
 
     Tetris();
 
-    Tetris(Tetris* copy);
+    explicit Tetris(Tetris* copy);
 
     void statistics();
 
@@ -57,6 +57,8 @@ public:
     void playSmartGame();
 
     void playSmarterGame();
+
+    void playRandomSilentGame(int &score, PieceName piece, int orientation, int position);
 };
 
 #endif //TETRIS_TETRIS_H
