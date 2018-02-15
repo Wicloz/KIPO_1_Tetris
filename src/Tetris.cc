@@ -575,6 +575,16 @@ void Tetris::playSmartGame() {
 void Tetris::playSmarterGame() {
 
 }
-//Tetris::playRandomGame
 
+Tetris::Tetris(Tetris* copy) {
+    h = copy->h;
+    w = copy->w;
+    piececount = copy->piececount;
+    rowscleared = copy->rowscleared;
 
+    for (int i = 0; i < hMAX; ++i) {
+        for (int j = 0; j < wMAX; ++j) {
+            board[i][j] = copy->board[i][j];
+        }
+    }
+}
