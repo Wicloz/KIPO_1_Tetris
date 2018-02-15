@@ -596,10 +596,10 @@ void Tetris::playSmartGame() {
         getRandomPiece(randomPiece);
 
         // Determine best move
-        for (int j = 0; j < possibilities(randomPiece); ++j) {
+        for (int i = 0; i < possibilities(randomPiece); ++i) {
             int orientation;
             int position;
-            computeOrAndPos(randomPiece, orientation, position, j);
+            computeOrAndPos(randomPiece, orientation, position, i);
             Tetris newBoard = new Tetris(this);
             newBoard.dropPiece(randomPiece, orientation, position);
             int score = newBoard.getSmartScore();
