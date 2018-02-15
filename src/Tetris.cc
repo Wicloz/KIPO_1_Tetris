@@ -594,12 +594,12 @@ void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, 
 }
 
 // Strategy for random games
-static void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
+void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
     tetris.randomChoice(randomPiece, bestOrientation, bestPosition);
 }
 
 // Strategy for smart games
-static void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
+void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
     int bestScore = INT_MAX;
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
         int orientation;
@@ -619,7 +619,7 @@ static void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece
 }
 
 // Strategy for Monte Carlo games
-static void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
+void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
     double bestScore = 0;
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
