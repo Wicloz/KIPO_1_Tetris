@@ -4,6 +4,7 @@
 #include <iostream>
 #include <ctime>         // for time stuff
 #include <cstdlib>       // for rand ( )
+#include <climits>
 
 using namespace std;
 
@@ -48,6 +49,8 @@ public:
     void topRow(bool *therow, int &numberrow, int &empties);
 
     int numberOfEmpties(int numberrow);
+
+    int getSmartScore();
 
     void playRandomGame();
 

@@ -568,7 +568,47 @@ void Tetris::playRandomGame() {
 
 //play a 'smart' game by looking at optimal piece placement
 void Tetris::playSmartGame() {
+    displayBoard();
 
+    while (!endOfGame()) {
+        // Track best move
+        int bestScore = INT_MAX;
+        int bestOrientation;
+        int bestPosition;
+
+        // Get a random piece
+        PieceName randomPiece;
+        getRandomPiece(randomPiece);
+
+        // Determine best move
+        for (int j = 0; j < possibilities(randomPiece); ++j) {
+            int orientation;
+            int position;
+            computeOrAndPos(randomPiece, orientation, position, j);
+            Tetris newBoard = new Tetris(this);
+            newBoard.dropPiece(randomPiece, orientation, position);
+            int score = newBoard.getSmartScore();
+
+            if (score < bestScore) {
+                bestScore = score;
+                bestOrientation = orientation;
+                bestPosition = position;
+            }
+        }
+
+        // Do best move
+        dropPiece(randomPiece, bestOrientation, bestPosition);
+        clearFullRows();
+
+        // Print information
+        int nr, emp;
+        bool therow[wMAX];
+        printInfoCurrentPiece(randomPiece, bestOrientation, bestPosition);
+        displayBoard();
+        topRow(therow, nr, emp);
+        if (nr != -1)
+            cout << "Top row " << nr << " has " << emp << " empties" << endl;
+    }
 }
 
 //play a 'smarter' game using monte carlo piece placement
@@ -576,6 +616,7 @@ void Tetris::playSmarterGame() {
 
 }
 
+// Copy constructor
 Tetris::Tetris(Tetris* copy) {
     h = copy->h;
     w = copy->w;
@@ -587,4 +628,38 @@ Tetris::Tetris(Tetris* copy) {
             board[i][j] = copy->board[i][j];
         }
     }
+}
+
+// Get the score for this board to use in playSmartGame, higher is worse
+int Tetris::getSmartScore() {
+    int highest = h - 1;
+    while (numberOfEmpties(highest) == w && highest > 0) {
+        --highest;
+    }
+
+    int broken = 0;
+    for (int i = 0; i < h - 1; ++i) {
+        for (int j = 0; j < w; ++j) {
+            if (!board[i][j]) {
+                for (int k = i; k < h; ++k) {
+                    if (board[k][j]) {
+                        ++broken;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    int fullrows = h;
+    for (int i = 0; i < h; ++i) {
+        for (int j = 0; j < w; ++j) {
+            if (!board[i][j]) {
+                --fullrows;
+                break;
+            }
+        }
+    }
+
+    return broken + highest - fullrows;
 }
