@@ -36,8 +36,6 @@ public:
 
     Tetris();
 
-    explicit Tetris(Tetris* copy);
-
     void statistics();
 
     int possibilities(PieceName piece);

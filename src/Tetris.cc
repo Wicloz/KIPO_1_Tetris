@@ -600,7 +600,7 @@ void Tetris::playSmartGame() {
             int orientation;
             int position;
             computeOrAndPos(randomPiece, orientation, position, i);
-            Tetris newBoard = new Tetris(this);
+            Tetris newBoard = *this;
             newBoard.dropPiece(randomPiece, orientation, position);
             int score = newBoard.getSmartScore();
 
@@ -647,8 +647,8 @@ void Tetris::playSmarterGame() {
             computeOrAndPos(piece, newOrientation, newPosition, i);
             int newScore = 0;
             for (int j = 0; j < numEvals; ++j) {
-                auto *clone = new Tetris(this);
-                clone->playRandomSilentGame(newScore, piece, newOrientation, newPosition);
+                Tetris clone = *this;
+                clone.playRandomSilentGame(newScore, piece, newOrientation, newPosition);
             }
             if (newScore > bestScore) {
                 bestScore = newScore;
@@ -668,20 +668,6 @@ void Tetris::playSmarterGame() {
             cout << "Top row " << nr << " has " << emp << " empties" << endl;
     }
 
-}
-
-// Copy constructor
-Tetris::Tetris(Tetris* copy) {
-    h = copy->h;
-    w = copy->w;
-    piececount = copy->piececount;
-    rowscleared = copy->rowscleared;
-
-    for (int i = 0; i < hMAX; ++i) {
-        for (int j = 0; j < wMAX; ++j) {
-            board[i][j] = copy->board[i][j];
-        }
-    }
 }
 
 // Get the score for this board to use in playSmartGame, higher is worse
