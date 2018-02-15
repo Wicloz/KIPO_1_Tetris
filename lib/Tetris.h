@@ -14,6 +14,7 @@ enum PieceName {
 
 const int wMAX = 20;     // maximum width of the game board
 const int hMAX = 15;     // maximum total height of the game board
+const int numEvals = 1000;
 
 class Tetris {
 private:

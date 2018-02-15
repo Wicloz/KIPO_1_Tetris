@@ -597,6 +597,7 @@ void Tetris::playSmartGame(bool output) {
             int orientation;
             int position;
             computeOrAndPos(randomPiece, orientation, position, i);
+
             Tetris newBoard = *this;
             newBoard.dropPiece(randomPiece, orientation, position);
             int score = newBoard.getSmartScore();
@@ -627,51 +628,57 @@ void Tetris::playSmartGame(bool output) {
 
 //play a 'smarter' game using monte carlo piece placement
 void Tetris::playSmarterGame(bool output) {
-    const int numEvals = 1000;
-    int bestScore;
-    int newOrientation;
-    int newPosition;
-    PieceName piece;
-    int orientation;
-    int position;
-    int nr, emp;
-    bool theRow[wMAX];
-    if (output)
+    if (output) {
         displayBoard();
-    while (!endOfGame()) {
-        getRandomPiece(piece);
-        randomChoice(piece, orientation, position); //placeholder choice
+    }
 
-        bestScore = 0;
-        for (int i = 0; i < possibilities(piece); ++i) {
-            computeOrAndPos(piece, newOrientation, newPosition, i);
-            int newScore = 0;
+    while (!endOfGame()) {
+        // Get a random piece
+        PieceName randomPiece;
+        getRandomPiece(randomPiece);
+
+        // Track best move
+        int bestScore = 0;
+        int bestOrientation;
+        int bestPosition;
+
+        // Determine best move
+        for (int i = 0; i < possibilities(randomPiece); ++i) {
+            int orientation;
+            int position;
+            computeOrAndPos(randomPiece, orientation, position, i);
+
+            int score = 0;
             for (int j = 0; j < numEvals; ++j) {
                 Tetris clone = *this;
-                clone.dropPiece(piece, newOrientation, newPosition);    // let it go
+                clone.dropPiece(randomPiece, orientation, position);
                 clone.clearFullRows();
                 clone.playRandomGame(false);
-                newScore += clone.piececount;
+                score += clone.piececount;
             }
-            if (newScore > bestScore) {
-                bestScore = newScore;
-                orientation = newOrientation;
-                position = newPosition;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestOrientation = orientation;
+                bestPosition = position;
             }
         }
 
-        dropPiece(piece, orientation, position);    // let it go
-        clearFullRows();                            // clear rows
+        // Do best move
+        dropPiece(randomPiece, bestOrientation, bestPosition);
+        clearFullRows();
 
+        // Print information
         if (output) {
-            printInfoCurrentPiece(piece, orientation, position);  // some text
-            displayBoard();                          // print the board
-            topRow(theRow, nr, emp);                    // how is top row?
+            int nr, emp;
+            bool therow[wMAX];
+            printInfoCurrentPiece(randomPiece, bestOrientation, bestPosition);
+            displayBoard();
+            topRow(therow, nr, emp);
             if (nr != -1)
                 cout << "Top row " << nr << " has " << emp << " empties" << endl;
         }
     }
-
 }
 
 // Get the score for this board to use in playSmartGame, higher is worse
