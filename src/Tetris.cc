@@ -678,5 +678,5 @@ int Tetris::getSmartScore() {
         }
     }
 
-    return broken + highest - fullrows;
+    return broken + highest - fullrows * 10;
 }
