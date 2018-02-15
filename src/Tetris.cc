@@ -1,0 +1,569 @@
+//
+// aitetris.cc
+// from http://www.liacs.leidenuniv.nl/~kosterswa/AI/
+// January 22, 2018
+// Walter Kosters, w.a.kosters@liacs.leidenuniv.nl
+//
+// Tetris playing programme
+//
+// Compile: g++ -Wall -O2 -o aitetris aitetris.cc 
+//
+// Every piece has a unique name (see below), orientation (0/1/2/3),
+// and starting position (0...width of game board - 1), indicating
+// the column of the leftmost square of the position of the piece.
+// Note that possible orientation and position depend on the piece!
+// As an example: move 7 (out of 34, being 0..33) for piece LG (a Left 
+// Gun), on a width 10 board, corresponds with orientation 0, starting 
+// in column 7.
+//
+// The program generates a random series of pieces, and then needs
+// an orientation and position (random in this version, see the function
+// playrandomgame ( )); the piece then drops as required. 
+// After that rows are cleared, and the board is displayed.
+//
+// The board is of size h (height) times w (width);
+// bottom left is (0,0); the top 3 rows are "outside" the board: 
+// if part of a piece ends here, the game stops.
+//
+// If you have a piece, the function possibilities returns the number
+// of possible moves p. These moves are denoted by 0,1,...,p-1. Given 
+// a number n in this range, the function computeorandpos then computes
+// the corresponding orientation and position. These can be used in
+// the function letitfall to drop the piece.
+//
+
+//
+// The 7 pieces, with orientations:
+//
+//  LS  0:  XX     1:  X                          Left Snake
+//           XX       XX
+//                    X
+//
+//  RS  0:   XX    1: X                           Right Snake
+//          XX        XX
+//                     X
+//
+//  I   0:  XXXX   1:  X                          I
+//                     X
+//                     X
+//                     X
+//
+//  Sq  always 0: XX                              Square
+//                XX
+//                
+//  T   0:   XXX   1:  X     2:   X      3:   X   T
+//            X        XX        XXX         XX
+//                     X                      X
+//
+//  LG  0:  XXX    1:  XX    2:  X       3:   X   Left Gun
+//            X        X         XXX          X
+//                     X                     XX
+//
+//  RG  0:  XXX    1:  X     2:    X     3:  XX   Right Gun
+//          X          X         XXX          X
+//                     XX                     X
+//                   
+
+#include "../lib/Tetris.h"
+
+// default constructor
+Tetris::Tetris() {
+    int i, j;
+    h = hMAX;
+    w = wMAX;
+    for (i = 0; i < hMAX; i++)
+        for (j = 0; j < wMAX; j++)
+            board[i][j] = false;
+}//Tetris::Tetris
+
+// constructor
+Tetris::Tetris(int height, int width) {
+    int i, j;
+    piececount = 0;
+    rowscleared = 0;
+    if (height < hMAX)
+        h = height;
+    else
+        h = hMAX;
+    if (4 <= width && width < wMAX)
+        w = width;
+    else
+        w = wMAX;
+    for (i = 0; i < hMAX; i++)
+        for (j = 0; j < wMAX; j++)
+            board[i][j] = false;
+}//Tetris::Tetris
+
+// some statistics
+void Tetris::statistics() {
+    cout << endl << "Done!" << endl
+         << rowscleared << " row(s) cleared." << endl
+         << piececount << " pieces." << endl << endl;
+}//Tetris::statistics
+
+// how many empties has row numberrow?
+int Tetris::numberempties(int numberrow) {
+    int j, theempties = w;
+    for (j = 0; j < w; j++)
+        if (board[numberrow][j])
+            theempties--;
+    return theempties;
+}//Tetris::numberempties
+
+// gives number of empties in heighest non-empty row,
+// and copies this row into therow; its row index being numberrow
+// if this is -1, the whole field is empty
+void Tetris::toprow(bool therow[wMAX], int &numberrow, int &empties) {
+    int i, j, theempties;
+    numberrow = -1;
+    empties = w;
+    for (i = 0; i < h; i++) {
+        theempties = numberempties(i);
+        if (theempties < w) {
+            for (j = 0; j < w; j++)
+                therow[j] = board[i][j];
+            empties = theempties;
+            numberrow = i;
+        }//if
+    }//for
+}//Tetris::toprow
+
+// checks for full rows --- and removes them
+void Tetris::clearrows() {
+    int i, j, k;
+    bool full;
+    for (i = h - 2; i >= 0; i--) {
+        full = true;
+        j = 0;
+        while (full && j < w)
+            if (!board[i][j])
+                full = false;
+            else
+                j++;
+        if (full) {
+            //cout << "Row cleared ..." << endl;
+            rowscleared++;
+            for (k = i; k < h - 1; k++)
+                for (j = 0; j < w; j++)
+                    board[k][j] = board[k + 1][j];
+            for (j = 0; j < w; j++)
+                board[h - 1][j] = false;
+        }//if
+    }//for
+}//Tetris::clearrows
+
+// displays current board on the screen
+void Tetris::displayboard() {
+    int i, j;
+    for (i = h - 1; i >= 0; i--) {
+        if (i < h - 3)
+            cout << "|";
+        else
+            cout << " ";
+        for (j = 0; j < w; j++)
+            if (board[i][j])
+                cout << "X";
+            else
+                cout << " ";
+        if (i < h - 3)
+            cout << "|" << endl;
+        else
+            cout << endl;
+    }//for
+    for (j = 0; j < w + 2; j++)
+        cout << "-";
+    cout << endl;
+    cout << " ";
+    for (j = 0; j < w; j++)
+        cout << j % 10;
+    cout << endl;
+}//Tetris::displayboard
+
+// let piece fall in position and orientation given
+// assume it still fits in top rows
+void Tetris::letitfall(PieceName piece, int orientation, int position) {
+    int x[4] = {0};
+    int y[4] = {0};
+    int i;
+    piececount++;
+    switch (piece) {
+        case Sq:
+            x[0] = position;
+            y[0] = h - 2;
+            x[1] = position;
+            y[1] = h - 1;
+            x[2] = position + 1;
+            y[2] = h - 2;
+            x[3] = position + 1;
+            y[3] = h - 1;
+            break;
+        case LG:
+            switch (orientation) {
+                case 0:
+                    x[0] = position + 2;
+                    y[0] = h - 2;
+                    x[1] = position + 2;
+                    y[1] = h - 1;
+                    x[2] = position + 1;
+                    y[2] = h - 1;
+                    x[3] = position;
+                    y[3] = h - 1;
+                    break;
+                case 1:
+                    x[0] = position;
+                    y[0] = h - 3;
+                    x[1] = position;
+                    y[1] = h - 2;
+                    x[2] = position;
+                    y[2] = h - 1;
+                    x[3] = position + 1;
+                    y[3] = h - 1;
+                    break;
+                case 2:
+                    x[0] = position;
+                    y[0] = h - 2;
+                    x[1] = position + 1;
+                    y[1] = h - 2;
+                    x[2] = position + 2;
+                    y[2] = h - 2;
+                    x[3] = position;
+                    y[3] = h - 1;
+                    break;
+                case 3:
+                    x[0] = position;
+                    y[0] = h - 3;
+                    x[1] = position + 1;
+                    y[1] = h - 1;
+                    x[2] = position + 1;
+                    y[2] = h - 2;
+                    x[3] = position + 1;
+                    y[3] = h - 3;
+                    break;
+            }//switch
+            break;
+        case RG:
+            switch (orientation) {
+                case 0:
+                    x[0] = position;
+                    y[0] = h - 2;
+                    x[1] = position + 2;
+                    y[1] = h - 1;
+                    x[2] = position + 1;
+                    y[2] = h - 1;
+                    x[3] = position;
+                    y[3] = h - 1;
+                    break;
+                case 1:
+                    x[0] = position;
+                    y[0] = h - 3;
+                    x[1] = position;
+                    y[1] = h - 2;
+                    x[2] = position;
+                    y[2] = h - 1;
+                    x[3] = position + 1;
+                    y[3] = h - 3;
+                    break;
+                case 2:
+                    x[0] = position;
+                    y[0] = h - 2;
+                    x[1] = position + 1;
+                    y[1] = h - 2;
+                    x[2] = position + 2;
+                    y[2] = h - 2;
+                    x[3] = position + 2;
+                    y[3] = h - 1;
+                    break;
+                case 3:
+                    x[0] = position + 1;
+                    y[0] = h - 3;
+                    x[1] = position + 1;
+                    y[1] = h - 1;
+                    x[2] = position + 1;
+                    y[2] = h - 2;
+                    x[3] = position;
+                    y[3] = h - 1;
+                    break;
+            }//switch
+            break;
+        case LS:
+            switch (orientation) {
+                case 0:
+                    x[0] = position + 1;
+                    y[0] = h - 2;
+                    x[1] = position + 1;
+                    y[1] = h - 1;
+                    x[2] = position + 2;
+                    y[2] = h - 2;
+                    x[3] = position;
+                    y[3] = h - 1;
+
+                    break;
+                case 1:
+                    x[0] = position;
+                    y[0] = h - 3;
+                    x[1] = position;
+                    y[1] = h - 2;
+                    x[2] = position + 1;
+                    y[2] = h - 1;
+                    x[3] = position + 1;
+                    y[3] = h - 2;
+                    break;
+            }//switch
+            break;
+        case RS:
+            switch (orientation) {
+                case 0:
+                    x[0] = position + 1;
+                    y[0] = h - 2;
+                    x[1] = position + 1;
+                    y[1] = h - 1;
+                    x[2] = position + 2;
+                    y[2] = h - 1;
+                    x[3] = position;
+                    y[3] = h - 2;
+                    break;
+                case 1:
+                    x[0] = position + 1;
+                    y[0] = h - 3;
+                    x[1] = position;
+                    y[1] = h - 2;
+                    x[2] = position + 1;
+                    y[2] = h - 2;
+                    x[3] = position;
+                    y[3] = h - 1;
+                    break;
+            }//switch
+            break;
+        case I :
+            switch (orientation) {
+                case 0:
+                    x[0] = position;
+                    y[0] = h - 1;
+                    x[1] = position + 1;
+                    y[1] = h - 1;
+                    x[2] = position + 2;
+                    y[2] = h - 1;
+                    x[3] = position + 3;
+                    y[3] = h - 1;
+                    break;
+                case 1:
+                    x[0] = position;
+                    y[0] = h - 4;
+                    x[1] = position;
+                    y[1] = h - 3;
+                    x[2] = position;
+                    y[2] = h - 2;
+                    x[3] = position;
+                    y[3] = h - 1;
+                    break;
+            }//switch
+            break;
+        case T :
+            switch (orientation) {
+                case 0:
+                    x[0] = position + 1;
+                    y[0] = h - 2;
+                    x[1] = position;
+                    y[1] = h - 1;
+                    x[2] = position + 1;
+                    y[2] = h - 1;
+                    x[3] = position + 2;
+                    y[3] = h - 1;
+                    break;
+                case 1:
+                    x[0] = position;
+                    y[0] = h - 3;
+                    x[1] = position;
+                    y[1] = h - 2;
+                    x[2] = position;
+                    y[2] = h - 1;
+                    x[3] = position + 1;
+                    y[3] = h - 2;
+                    break;
+                case 2:
+                    x[0] = position;
+                    y[0] = h - 2;
+                    x[1] = position + 1;
+                    y[1] = h - 2;
+                    x[2] = position + 2;
+                    y[2] = h - 2;
+                    x[3] = position + 1;
+                    y[3] = h - 1;
+                    break;
+                case 3:
+                    x[0] = position + 1;
+                    y[0] = h - 3;
+                    x[1] = position + 1;
+                    y[1] = h - 2;
+                    x[2] = position + 1;
+                    y[2] = h - 1;
+                    x[3] = position;
+                    y[3] = h - 2;
+                    break;
+            }//switch
+            break;
+    }//switch
+    while (y[0] > 0 && !board[y[0] - 1][x[0]]
+           && !board[y[1] - 1][x[1]] && !board[y[2] - 1][x[2]]
+           && !board[y[3] - 1][x[3]])
+        for (i = 0; i < 4; i++)
+            y[i]--;
+    for (i = 0; i < 4; i++)
+        board[y[i]][x[i]] = true;
+}//Tetris::letitfall
+
+// give piece a chance: info to the screen
+void Tetris::infothrowpiece(PieceName piece, int orientation, int position) {
+    int j;
+    cout << endl;
+    for (j = 0; j < w + 5; j++)
+        cout << "=";
+    if (piececount < 10)
+        cout << "   ";
+    else if (piececount < 100)
+        cout << "  ";
+    else
+        cout << " ";
+    cout << piececount << ": ";
+    switch (piece) {
+        case Sq:
+            cout << "Square      ";
+            break;
+        case LG:
+            cout << "Left gun    ";
+            break;
+        case RG:
+            cout << "Right gun   ";
+            break;
+        case LS:
+            cout << "Left snake  ";
+            break;
+        case RS:
+            cout << "Right snake ";
+            break;
+        case I:
+            cout << "I           ";
+            break;
+        case T:
+            cout << "T           ";
+            break;
+    }//switch
+    cout << orientation << " " << position << endl;
+}//Tetris::infothrowpiece
+
+// check whether top 3 rows are somewhat occupied (so game has ended?)
+bool Tetris::endofgame() {
+    int j;
+    for (j = 0; j < w; j++)
+        if (board[h - 3][j])
+            return true;
+    return false;
+}//Tetris::endofgame
+
+// how many possibilities has piece?
+int Tetris::possibilities(PieceName piece) {
+    if (piece == Sq)
+        return (w - 1);
+    else if (piece == LS || piece == RS || piece == I)
+        return (2 * w - 3);
+    else
+        return (4 * w - 6);
+}//Tetris::possibilities
+
+// compute orientation and position for move themove from piece
+void Tetris::computeorandpos(PieceName piece, int &orientation, int &position, int themove) {
+    orientation = 0;
+    position = themove;
+    switch (piece) {
+        case LS:
+        case RS:
+            if (themove > w - 3) {
+                orientation = 1;
+                position = themove - (w - 2);
+            }//if
+            break;
+        case I:
+            if (themove > w - 4) {
+                orientation = 1;
+                position = themove - (w - 3);
+            }//if
+            break;
+        case Sq:
+            break;
+        case T:
+        case LG:
+        case RG:
+            if (themove > 3 * w - 6) {
+                orientation = 3;
+                position = themove - (3 * w - 5);
+            }//if
+            else if (themove > 2 * w - 4) {
+                orientation = 2;
+                position = themove - (2 * w - 3);
+            }//if
+            else if (themove > w - 3) {
+                orientation = 1;
+                position = themove - (w - 2);
+            }//if
+            break;
+    }//switch
+}//Tetris::computeorandpos
+
+// now choose (random) orientation and position for piece
+void Tetris::randomchoice(PieceName piece, int &orientation, int &position) {
+    int themove = rand() % possibilities(piece);
+    computeorandpos(piece, orientation, position, themove);
+}//Tetris::randomchoice
+
+// generate a random piece
+void getrandompiece(PieceName &piece) {
+    int intpiece = rand() % 7;
+    switch (intpiece) {
+        case 0:
+            piece = LS;
+            break;
+        case 1:
+            piece = RS;
+            break;
+        case 2:
+            piece = I;
+            break;
+        case 3:
+            piece = Sq;
+            break;
+        case 4:
+            piece = T;
+            break;
+        case 5:
+            piece = LG;
+            break;
+        case 6:
+            piece = RG;
+            break;
+    }//switch
+}//getrandompiece
+
+//play a random game
+void Tetris::playrandomgame() {
+    PieceName piece;
+    int orientation;
+    int position;
+    int nr, emp;
+    bool therow[wMAX];
+    displayboard();
+    while (!endofgame()) {
+        getrandompiece(piece);                    // obtain some piece
+        randomchoice(piece, orientation, position); // how to drop it?
+        letitfall(piece, orientation, position);    // let it go
+        clearrows();                             // clear rows
+
+        // the following output lines can be easily removed
+        infothrowpiece(piece, orientation, position);  // some text
+        displayboard();                          // print the board
+        toprow(therow, nr, emp);                    // how is top row?
+        if (nr != -1)
+            cout << "Top row " << nr << " has " << emp << " empties" << endl;
+    }//while
+}//Tetris::playrandomgame
+
+
