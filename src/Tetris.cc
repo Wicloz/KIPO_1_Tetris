@@ -545,27 +545,31 @@ void getRandomPiece(PieceName &piece) {
 
 //play a random game
 void Tetris::playRandomGame(bool output) {
-    PieceName piece;
-    int orientation;
-    int position;
-    int nr, emp;
-    bool theRow[wMAX];
-
     if (output) {
         displayBoard();
     }
 
     while (!endOfGame()) {
-        getRandomPiece(piece);                    // obtain some piece
-        randomChoice(piece, orientation, position); // how to drop it?
-        dropPiece(piece, orientation, position);    // let it go
-        clearFullRows();                             // clear rows
+        // Get a random piece
+        PieceName randomPiece;
+        getRandomPiece(randomPiece);
 
+        // Get a random option
+        int orientation;
+        int position;
+        randomChoice(randomPiece, orientation, position);
+
+        // Do move
+        dropPiece(randomPiece, orientation, position);
+        clearFullRows();
+
+        // Print information
         if (output) {
-            // the following output lines can be easily removed
-            printInfoCurrentPiece(piece, orientation, position);  // some text
-            displayBoard();                          // print the board
-            topRow(theRow, nr, emp);                    // how is top row?
+            int nr, emp;
+            bool therow[wMAX];
+            printInfoCurrentPiece(randomPiece, orientation, position);
+            displayBoard();
+            topRow(therow, nr, emp);
             if (nr != -1)
                 cout << "Top row " << nr << " has " << emp << " empties" << endl;
         }
@@ -579,14 +583,14 @@ void Tetris::playSmartGame(bool output) {
     }
 
     while (!endOfGame()) {
+        // Get a random piece
+        PieceName randomPiece;
+        getRandomPiece(randomPiece);
+
         // Track best move
         int bestScore = INT_MAX;
         int bestOrientation;
         int bestPosition;
-
-        // Get a random piece
-        PieceName randomPiece;
-        getRandomPiece(randomPiece);
 
         // Determine best move
         for (int i = 0; i < possibilities(randomPiece); ++i) {
