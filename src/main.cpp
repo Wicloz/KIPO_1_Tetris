@@ -16,19 +16,17 @@ int main(int argc, char *argv[]) {
     else
         srand(atoi(argv[4]));
 
-    switch (atoi(argv[1])) {
-        case 1:
-            board.playRandomGame(true);
-            break;
-        case 2:
-            board.playSmartGame(true);
-            break;
-        case 3:
-            board.playSmarterGame(true);
-            break;
-        default:
-            cerr << "Invalid playing type!" << endl;
-            return -1;
+    if (string(argv[1]) == "Random" || string(argv[1]) == "random" || string(argv[1]) == "R" || string(argv[1]) == "r")
+        board.playRandomGame(false);
+    else if (string(argv[1]) == "Smart" || string(argv[1]) == "smart" || string(argv[1]) == "S" ||
+             string(argv[1]) == "s")
+        board.playSmartGame(false);
+    else if (string(argv[1]) == "Smarter" || string(argv[1]) == "smarter" || string(argv[1]) == "Ss" ||
+             string(argv[1]) == "ss")
+        board.playSmarterGame(false);
+    else {
+        cerr << "Invalid playing type!" << endl;
+        return -1;
     }
     board.statistics();
 
