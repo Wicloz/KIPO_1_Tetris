@@ -4,4 +4,6 @@
 !/lib/
 !/.gitignore
 !/CMakeLists.txt
-!/Analysis.py
+!/analysis/
+/analysis/*
+!/analysis/Analysis.py
