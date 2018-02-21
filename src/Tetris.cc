@@ -509,12 +509,6 @@ void Tetris::computeOrAndPos(PieceName piece, int &orientation, int &position, i
     }//switch
 }//Tetris::computeOrAndPos
 
-// now choose (random) orientation and position for piece
-void Tetris::randomChoice(PieceName piece, int &orientation, int &position) {
-    int themove = rand() % possibilities(piece);
-    computeOrAndPos(piece, orientation, position, themove);
-}//Tetris::randomChoice
-
 // generate a random piece
 void getRandomPiece(PieceName &piece) {
     int intpiece = rand() % 7;
@@ -541,22 +535,22 @@ void getRandomPiece(PieceName &piece) {
             piece = RG;
             break;
     }//switch
-}//getRandomPiece
+}//Tetris::getRandomPiece
 
 // Play a random game
 void Tetris::playRandomGame(bool output) {
     playGameSkeleton(output, &randomGameDetermineBest);
-}
+}//Tetris::playRandomGame
 
 // Play a 'smart' game by looking at optimal piece placement
 void Tetris::playSmartGame(bool output) {
     playGameSkeleton(output, &smartGameDetermineBest);
-}
+}//Tetris::playSmartGame
 
 // Play a 'smarter' game using monte carlo piece placement
 void Tetris::playSmarterGame(bool output) {
     playGameSkeleton(output, &smarterGameDetermineBest);
-}
+}//Tetris::playSmarterGame
 
 // Skeleton for playing games using different strategies
 void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&, double&)) {
@@ -591,12 +585,13 @@ void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, 
                 cout << "Top row " << nr << " has " << emp << " empties" << endl;
         }
     }
-}
+}//Tetris::playGameSkeleton
 
 // Strategy for random games
 void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
-    tetris.randomChoice(randomPiece, bestOrientation, bestPosition);
-}
+    int randomMove = rand() % tetris.possibilities(randomPiece);
+    tetris.computeOrAndPos(randomPiece, bestOrientation, bestPosition, randomMove);
+}//Tetris::randomGameDetermineBest
 
 // Strategy for smart games
 void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
@@ -616,7 +611,7 @@ void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &
             bestPosition = position;
         }
     }
-}
+}//Tetris::smartGameDetermineBest
 
 // Strategy for Monte Carlo games
 void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
@@ -629,15 +624,16 @@ void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int
 
         double score = 0.0;
         for (int j = 0; j < numEvals; ++j) {
-            Tetris clone = tetris;
-            clone.dropPiece(randomPiece, orientation, position);
-            clone.clearFullRows();
-            clone.playRandomGame(false);
-            score += clone.piececount;
+            Tetris newBoard = tetris;
+            newBoard.dropPiece(randomPiece, orientation, position);
+            newBoard.clearFullRows();
+            newBoard.playRandomGame(false);
+            score += newBoard.piececount;
             // If current score is way too low, stop iterating on this position
             if (j != 0 && score/j < bestScore-avgScore/4)
                 break;
         }
+
         if (score/numEvals > bestScore) {
             bestScore = score/numEvals;
             avgScore += (bestScore-avgScore)/1.5;
@@ -645,15 +641,17 @@ void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int
             bestPosition = position;
         }
     }
-}
+}//Tetris::smarterGameDetermineBest
 
 // Get the score for this board to use in smart games, higher is worse
 int Tetris::getSmartScore() {
+    // Test on highest column
     int highest = h - 1;
     while (numberOfEmpties(highest) == w && highest > 0) {
         --highest;
     }
 
+    // Test on inaccessible spaces
     int broken = 0;
     for (int i = 0; i < h - 1; ++i) {
         for (int j = 0; j < w; ++j) {
@@ -668,6 +666,7 @@ int Tetris::getSmartScore() {
         }
     }
 
+    // Test on full rows which will be cleared
     int fullrows = h;
     for (int i = 0; i < h; ++i) {
         for (int j = 0; j < w; ++j) {
@@ -678,5 +677,6 @@ int Tetris::getSmartScore() {
         }
     }
 
-    return broken + highest - fullrows * 10;
-}
+    // Return weighted score
+    return broken + highest - fullrows * 6;
+}//Tetris::getSmartScore

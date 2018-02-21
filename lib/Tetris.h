@@ -2,8 +2,8 @@
 #define TETRIS_TETRIS_H
 
 #include <iostream>
-#include <ctime>         // for time stuff
-#include <cstdlib>       // for rand ( )
+#include <ctime>
+#include <cstdlib>
 #include <climits>
 
 using namespace std;
@@ -12,16 +12,16 @@ enum PieceName {
     Sq, LG, RG, LS, RS, I, T
 };
 
-const int wMAX = 20;     // maximum width of the game board
-const int hMAX = 15;     // maximum total height of the game board
-const int numEvals = 1000;
+const int wMAX = 20;            // maximum width of the game board
+const int hMAX = 20;            // maximum total height of the game board
+const int numEvals = 1000;      // number of evaluations per branch for the monte carlo strategy
 
 class Tetris {
 private:
-    int h, w;               // actual height and width
-    bool board[hMAX][wMAX]; // the game board; board[i][j] true <=> occupied
-    int piececount;         // number of pieces that has been used so far
-    int rowscleared;        // number of rows cleared so far
+    int h, w;                   // actual height and width
+    bool board[hMAX][wMAX];     // the game board; board[i][j] true <=> occupied
+    int piececount;             // number of pieces that has been used so far
+    int rowscleared;            // number of rows cleared so far
 public:
     void clearFullRows();
 
@@ -42,8 +42,6 @@ public:
     int possibilities(PieceName piece);
 
     void computeOrAndPos(PieceName piece, int &orientation, int &position, int themove);
-
-    void randomChoice(PieceName piece, int &orientation, int &position);
 
     void topRow(bool *therow, int &numberrow, int &empties);
 
