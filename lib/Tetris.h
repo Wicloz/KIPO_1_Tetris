@@ -14,7 +14,7 @@ enum PieceName {
 
 const int wMAX = 20;            // maximum width of the game board
 const int hMAX = 20;            // maximum total height of the game board
-const int numEvals = 1000;      // number of evaluations per branch for the monte carlo strategy
+const int numEvals = 1000;      // number of evaluations for Monte Carlo strategy
 
 class Tetris {
 private:

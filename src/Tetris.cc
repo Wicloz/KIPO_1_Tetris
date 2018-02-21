@@ -596,6 +596,7 @@ void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int 
 // Strategy for smart games
 void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
     int bestScore = INT_MAX;
+
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
         int orientation;
         int position;
@@ -622,7 +623,7 @@ void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int
         int position;
         tetris.computeOrAndPos(randomPiece, orientation, position, i);
 
-        double score = 0.0;
+        double score = 0;
         for (int j = 0; j < numEvals; ++j) {
             Tetris newBoard = tetris;
             newBoard.dropPiece(randomPiece, orientation, position);
