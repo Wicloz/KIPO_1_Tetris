@@ -589,12 +589,14 @@ void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, 
 
 // Strategy for random games
 void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
+    (void) unused;
     int randomMove = rand() % tetris.possibilities(randomPiece);
     tetris.computeOrAndPos(randomPiece, bestOrientation, bestPosition, randomMove);
 }//Tetris::randomGameDetermineBest
 
 // Strategy for smart games
 void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
+    (void) unused;
     int bestScore = INT_MAX;
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {

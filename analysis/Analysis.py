@@ -10,8 +10,8 @@ print("**This script performs comparison of 3 different AI playing styles of tet
 # Parameters
 boardSize = ['15', '10']
 playingTypes = ['Random', 'Smart', 'Smarter']
-n = 20
-fileLocation = '../cmake-build-debug/KIPO_1_Tetris'
+n = 40
+fileLocation = '../tetris'
 
 # n random seeds
 seeds = [str(x) for x in sample(range(100000, 100000000), n)]
