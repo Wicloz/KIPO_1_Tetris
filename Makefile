@@ -2,7 +2,7 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wextra
 # Lijst met objecten
-OBJECTS = Tetris.o
+OBJECTS = Tetris.o ThreadPool.o
 
 all: tetris
 

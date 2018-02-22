@@ -1,7 +1,7 @@
 #include "../lib/Tetris.h"
 
 int main(int argc, char *argv[]) {
-    bool output = true;
+    bool output = false;
 
     if (argc != 4 && argc != 5) {
         cout << "Usage: " << argv[0] << " <playing type> <height> <width>" << endl;

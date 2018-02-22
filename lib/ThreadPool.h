@@ -1,9 +1,5 @@
-//
-// Created by hermes on 22-2-18.
-//
-
-#ifndef KIPO_1_TETRIS_THREADPOOL_H
-#define KIPO_1_TETRIS_THREADPOOL_H
+#ifndef TETRIS_THREADPOOL_H
+#define TETRIS_THREADPOOL_H
 
 #include <iostream>
 #include <thread>
@@ -33,4 +29,4 @@ public:
 };
 
 
-#endif //KIPO_1_TETRIS_THREADPOOL_H
+#endif //THREADPOOL_H

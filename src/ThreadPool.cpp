@@ -18,7 +18,7 @@ ThreadPool::~ThreadPool() {
         shutdown = true;
         condVar.notify_all();
     }
-    cerr << "Joining threads" << endl;
+//    cerr << "Joining threads" << endl;
     for (auto &thread : threads)
         thread.join();
 }
@@ -42,11 +42,11 @@ void ThreadPool::threadEntry(int i) {
 
             if (methods.empty()) {
                 // No jobs to do and we are shutting down
-                cerr << "Thread " << i << " terminates" << endl;
+//                cerr << "Thread " << i << " terminates" << endl;
                 return;
             }
 
-            cerr << "Thread " << i << " does a job" << endl;
+//            cerr << "Thread " << i << " does a job" << endl;
             job = move(methods.front());
             methods.pop();
         }

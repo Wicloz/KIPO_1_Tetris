@@ -634,6 +634,7 @@ void Tetris::smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, in
 // Strategy for Monte Carlo games
 void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore, bool random) {
     double bestScore = 0;
+    ThreadPool threadPool(numEvals);
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
         int orientation;
@@ -641,16 +642,16 @@ void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, i
         tetris.computeOrAndPos(randomPiece, orientation, position, i);
 
         double score = 0;
-        ThreadPool threadPool(numEvals);
         for (int j = 0; j < numEvals; ++j) {
             Tetris newBoard = tetris;
             newBoard.dropPiece(randomPiece, orientation, position);
             newBoard.clearFullRows();
             if (random)
-                threadPool.runMethod(bind(newBoard.playRandomGame, false));
+                threadPool.runMethod(bind(&Tetris::playRandomGame, &newBoard, false));
 //                newBoard.playRandomGame(false);
             else
-                newBoard.playSmartGame(false);
+                threadPool.runMethod(bind(&Tetris::playSmartGame, &newBoard, false));
+//                newBoard.playSmartGame(false);
             score += newBoard.piececount;
             // If current score is way too low, stop iterating on this position
             if (j != 0 && score/j < bestScore-avgScore/4)
