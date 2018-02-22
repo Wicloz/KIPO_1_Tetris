@@ -2,3 +2,6 @@
 cmake-build-debug
 obj
 tetris
+venv
+analysis/*
+!analysis/Analysis.py
