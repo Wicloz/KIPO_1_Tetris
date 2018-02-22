@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib as plt
 
 
-print("**This script performs comparison of 3 different AI playing styles of tetris.**\n**The results are the average number of turns per game**")
+print("**This script performs comparison of 4 different AI playing styles of tetris.**\n**The results are the average number of turns per game**")
 
 # Parameters
 boardSize = ['15', '10']
