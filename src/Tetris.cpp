@@ -641,12 +641,14 @@ void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, i
         tetris.computeOrAndPos(randomPiece, orientation, position, i);
 
         double score = 0;
+        ThreadPool threadPool(numEvals);
         for (int j = 0; j < numEvals; ++j) {
             Tetris newBoard = tetris;
             newBoard.dropPiece(randomPiece, orientation, position);
             newBoard.clearFullRows();
             if (random)
-                newBoard.playRandomGame(false);
+                threadPool.runMethod(bind(newBoard.playRandomGame, false));
+//                newBoard.playRandomGame(false);
             else
                 newBoard.playSmartGame(false);
             score += newBoard.piececount;
