@@ -24,6 +24,8 @@ int main(int argc, char *argv[]) {
         board.playSmartGame(false);
     else if (string(argv[1]) == "Smarter" || string(argv[1]) == "smarter" || string(argv[1]) == "Ss" || string(argv[1]) == "ss")
         board.playSmarterGame(false);
+    else if (string(argv[1]) == "Smartest" || string(argv[1]) == "smartest" || string(argv[1]) == "Sss" || string(argv[1]) == "sss")
+        board.playSmartestGame(false);
 
     else {
         cerr << "Invalid playing type!" << endl;

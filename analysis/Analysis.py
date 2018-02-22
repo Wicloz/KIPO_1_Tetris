@@ -9,7 +9,7 @@ print("**This script performs comparison of 3 different AI playing styles of tet
 
 # Parameters
 boardSize = ['15', '10']
-playingTypes = ['Random', 'Smart', 'Smarter']
+playingTypes = ['Random', 'Smart', 'Smarter', 'Smartest']
 n = 40
 fileLocation = '../tetris'
 
@@ -32,9 +32,8 @@ result[:] = [x/len(seeds) for x in result]
 # Display results
 print("For n = " + str(n))
 print()
-print("Random: " + str(result[0]))
-print("Smart: " + str(result[1]))
-print("Smarter: " + str(result[2]))
+for x in playingTypes:
+    print(x + ': ' + str(result[playingTypes.index(x)]))
 
 pd.DataFrame(results, columns=playingTypes).plot.box()
 

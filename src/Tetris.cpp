@@ -537,7 +537,7 @@ void getRandomPiece(PieceName &piece) {
     }//switch
 }//Tetris::getRandomPiece
 
-// Play a random game
+// Play a 'random' game
 void Tetris::playRandomGame(bool output) {
     playGameSkeleton(output, &randomGameDetermineBest);
 }//Tetris::playRandomGame
@@ -552,6 +552,11 @@ void Tetris::playSmarterGame(bool output) {
     playGameSkeleton(output, &smarterGameDetermineBest);
 }//Tetris::playSmarterGame
 
+// Play a 'smarter' game using monte carlo piece placement, but using 'smart' instead of 'random'
+void Tetris::playSmartestGame(bool output) {
+    playGameSkeleton(output, &smartestGameDetermineBest);
+}//Tetris::playSmartestGame
+
 // Skeleton for playing games using different strategies
 void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&, double&)) {
     // Print information
@@ -559,6 +564,7 @@ void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, 
         displayBoard();
     }
 
+    double extra = 0;
     while (!endOfGame()) {
         // Get a random piece
         PieceName randomPiece;
@@ -567,7 +573,6 @@ void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, 
         // Determine best move
         int bestOrientation;
         int bestPosition;
-        double extra = 0;
         callback(*this, randomPiece, bestOrientation, bestPosition, extra);
 
         // Do best move
@@ -616,8 +621,18 @@ void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &
     }
 }//Tetris::smartGameDetermineBest
 
-// Strategy for Monte Carlo games
+// Strategy for Monte Carlo games - using random games
 void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
+    verySmartGameDetermineBest(tetris, randomPiece, bestOrientation, bestPosition, avgScore, true);
+}//Tetris::smarterGameDetermineBest
+
+// Strategy for Monte Carlo games - using smart games
+void Tetris::smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
+    verySmartGameDetermineBest(tetris, randomPiece, bestOrientation, bestPosition, avgScore, false);
+}//Tetris::smartestGameDetermineBest
+
+// Strategy for Monte Carlo games
+void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore, bool random) {
     double bestScore = 0;
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
@@ -630,7 +645,10 @@ void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int
             Tetris newBoard = tetris;
             newBoard.dropPiece(randomPiece, orientation, position);
             newBoard.clearFullRows();
-            newBoard.playRandomGame(false);
+            if (random)
+                newBoard.playRandomGame(false);
+            else
+                newBoard.playSmartGame(false);
             score += newBoard.piececount;
             // If current score is way too low, stop iterating on this position
             if (j != 0 && score/j < bestScore-avgScore/4)
@@ -644,7 +662,7 @@ void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int
             bestPosition = position;
         }
     }
-}//Tetris::smarterGameDetermineBest
+}//Tetris::verySmartGameDetermineBest
 
 // Get the score for this board to use in smart games, higher is worse
 int Tetris::getSmartScore() {

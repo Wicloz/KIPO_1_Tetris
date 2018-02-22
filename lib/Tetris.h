@@ -41,9 +41,12 @@ public:
     void playRandomGame(bool output);
     void playSmartGame(bool output);
     void playSmarterGame(bool output);
+    void playSmartestGame(bool output);
     static void randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
     static void smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
     static void smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
+    static void smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
+    static void verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra, bool random);
 };
 
 #endif //TETRIS_TETRIS_H
