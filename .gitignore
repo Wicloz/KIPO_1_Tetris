@@ -1,10 +1,4 @@
-/*
-!/src/
-!/README.md
-!/lib/
-!/.gitignore
-!/CMakeLists.txt
-!/analysis/
-/analysis/*
-!/analysis/Analysis.py
-!/Makefile
+.idea
+cmake-build-debug
+obj
+tetris
