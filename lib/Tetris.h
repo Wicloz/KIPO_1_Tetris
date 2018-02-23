@@ -38,16 +38,16 @@ public:
     void topRow(bool *therow, int &numberrow, int &empties);
     int numberOfEmpties(int numberrow);
     int getSmartScore();
-    void playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&, double&));
+    void playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&));
     void playRandomGame(bool output);
     void playSmartGame(bool output);
     void playSmarterGame(bool output);
     void playSmartestGame(bool output);
-    static void randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
-    static void smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
-    static void smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
-    static void smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra);
-    static void verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, double& extra, bool random);
+    static void randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition);
+    static void smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition);
+    static void smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition);
+    static void smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition);
+    static void verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int& bestOrientation, int& bestPosition, bool random);
 };
 
 #endif //TETRIS_TETRIS_H

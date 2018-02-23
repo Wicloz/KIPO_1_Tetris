@@ -558,13 +558,12 @@ void Tetris::playSmartestGame(bool output) {
 }//Tetris::playSmartestGame
 
 // Skeleton for playing games using different strategies
-void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&, double&)) {
+void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, int&, int&)) {
     // Print information
     if (output) {
         displayBoard();
     }
 
-    double extra = 0;
     while (!endOfGame()) {
         // Get a random piece
         PieceName randomPiece;
@@ -573,7 +572,7 @@ void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, 
         // Determine best move
         int bestOrientation;
         int bestPosition;
-        callback(*this, randomPiece, bestOrientation, bestPosition, extra);
+        callback(*this, randomPiece, bestOrientation, bestPosition);
 
         // Do best move
         dropPiece(randomPiece, bestOrientation, bestPosition);
@@ -593,15 +592,13 @@ void Tetris::playGameSkeleton(bool output, void (*callback)(Tetris&, PieceName, 
 }//Tetris::playGameSkeleton
 
 // Strategy for random games
-void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
-    (void) unused;
+void Tetris::randomGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition) {
     int randomMove = rand() % tetris.possibilities(randomPiece);
     tetris.computeOrAndPos(randomPiece, bestOrientation, bestPosition, randomMove);
 }//Tetris::randomGameDetermineBest
 
 // Strategy for smart games
-void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& unused) {
-    (void) unused;
+void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition) {
     int bestScore = INT_MAX;
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
@@ -622,26 +619,26 @@ void Tetris::smartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &
 }//Tetris::smartGameDetermineBest
 
 // Strategy for Monte Carlo games - using random games
-void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
-    verySmartGameDetermineBest(tetris, randomPiece, bestOrientation, bestPosition, avgScore, true);
+void Tetris::smarterGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition) {
+    verySmartGameDetermineBest(tetris, randomPiece, bestOrientation, bestPosition, true);
 }//Tetris::smarterGameDetermineBest
 
 // Strategy for Monte Carlo games - using smart games
-void Tetris::smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore) {
-    verySmartGameDetermineBest(tetris, randomPiece, bestOrientation, bestPosition, avgScore, false);
+void Tetris::smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition) {
+    verySmartGameDetermineBest(tetris, randomPiece, bestOrientation, bestPosition, false);
 }//Tetris::smartestGameDetermineBest
 
 // Strategy for Monte Carlo games
-void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore, bool random) {
-    double bestScore = 0;
+void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, bool random) {
     int numEvals = random ? numEvalsRandom : numEvalsSmart;
+    int bestScore = 0;
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
         int orientation;
         int position;
         tetris.computeOrAndPos(randomPiece, orientation, position, i);
 
-        double score = 0;
+        int score = 0;
         for (int j = 0; j < numEvals; ++j) {
             Tetris newBoard = tetris;
             newBoard.dropPiece(randomPiece, orientation, position);
@@ -651,14 +648,10 @@ void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, i
             else
                 newBoard.playSmartGame(false);
             score += newBoard.piececount;
-            // If current score is way too low, stop iterating on this position
-            if (j != 0 && score/j < bestScore-avgScore/4)
-                break;
         }
 
-        if (score/numEvals > bestScore) {
-            bestScore = score/numEvals;
-            avgScore += (bestScore-avgScore)/1.5;
+        if (score > bestScore) {
+            bestScore = score;
             bestOrientation = orientation;
             bestPosition = position;
         }
