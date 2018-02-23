@@ -634,6 +634,7 @@ void Tetris::smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, in
 // Strategy for Monte Carlo games
 void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore, bool random) {
     double bestScore = 0;
+    int numEvals = random ? numEvalsRandom : numEvalsSmart;
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
         int orientation;

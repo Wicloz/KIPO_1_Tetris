@@ -12,16 +12,17 @@ enum PieceName {
     Sq, LG, RG, LS, RS, I, T
 };
 
-const int wMAX = 20;            // maximum width of the game board
-const int hMAX = 20;            // maximum total height of the game board
-const int numEvals = 1000;      // number of evaluations for Monte Carlo strategy
+const int wMAX = 20;                // maximum width of the game board
+const int hMAX = 20;                // maximum height of the game board
+const int numEvalsRandom = 1000;    // number of evaluations for the Monte Carlo strategy using random games
+const int numEvalsSmart = 100;      // number of evaluations for the Monte Carlo strategy using smart games
 
 class Tetris {
 private:
-    int h, w;                   // actual height and width
-    bool board[hMAX][wMAX];     // the game board; board[i][j] true <=> occupied
-    int piececount;             // number of pieces that has been used so far
-    int rowscleared;            // number of rows cleared so far
+    int h, w;                       // actual height and width
+    bool board[hMAX][wMAX];         // the game board; board[i][j] true <=> occupied
+    int piececount;                 // number of pieces that has been used so far
+    int rowscleared;                // number of rows cleared so far
 
 public:
     void clearFullRows();
