@@ -6,6 +6,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <climits>
+#include <thread>
+#include <vector>
 
 using namespace std;
 

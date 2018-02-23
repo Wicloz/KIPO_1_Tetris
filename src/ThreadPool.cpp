@@ -4,7 +4,7 @@
 
 #include "../lib/ThreadPool.h"
 
-ThreadPool::ThreadPool(int numThreads) : shutdown(false) {
+ThreadPool::ThreadPool(int numThreads) : shutdown(false), jobsPending(0) {
     // Create specified number of threads
     threads.reserve(numThreads);
     for (int i = 0; i < numThreads; ++i)
@@ -18,7 +18,7 @@ ThreadPool::~ThreadPool() {
         shutdown = true;
         condVar.notify_all();
     }
-//    cerr << "Joining threads" << endl;
+    cerr << "Joining threads" << endl;
     for (auto &thread : threads)
         thread.join();
 }
@@ -27,7 +27,7 @@ void ThreadPool::runMethod(function<void(void)> func) {
     // Place job on the queue and unblock a thread
     unique_lock<mutex> l(lock);
 
-    methods.emplace(move(func));
+    jobs.emplace(move(func));
     condVar.notify_one();
 }
 
@@ -37,21 +37,36 @@ void ThreadPool::threadEntry(int i) {
         {
             unique_lock<mutex> l(lock);
 
-            while (!shutdown && methods.empty())
+            while (!shutdown && jobs.empty())
                 condVar.wait(l);
 
-            if (methods.empty()) {
+            if (jobs.empty()) {
                 // No jobs to do and we are shutting down
-//                cerr << "Thread " << i << " terminates" << endl;
+                cerr << "Thread " << i << " terminates" << endl;
                 return;
             }
 
-//            cerr << "Thread " << i << " does a job" << endl;
-            job = move(methods.front());
-            methods.pop();
+            cerr << "Thread " << i << " does a job" << endl;
+            job = move(jobs.front());
+            jobs.pop();
         }
 
         // Do the job without holding any locks
+        ++jobsPending;
         job();
+        if (--jobsPending == 0)
+            mainCondVar.notify_one();
     }
+}
+
+bool ThreadPool::done() {
+    return jobsPending == 0 && jobs.empty();
+}
+
+void ThreadPool::waitUntillDone() {
+    if (jobsPending > 0) {
+        unique_lock<mutex> l(mainLock);
+        mainCondVar.wait(l);
+    }
+
 }

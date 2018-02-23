@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <queue>
 #include <functional>
+#include <atomic>
 
 using namespace std;
 
@@ -17,15 +18,22 @@ private:
     mutex lock;
     condition_variable condVar;
     bool shutdown;
-    queue<function<void(void)>> methods;
+    queue<function<void(void)>> jobs;
     vector<thread> threads;
+    int jobsPending;
+    mutex mainLock;
+    condition_variable mainCondVar;
 
 public:
-    ThreadPool(int numThreads);
+    explicit ThreadPool(int numThreads);
 
     ~ThreadPool();
 
     void runMethod(function<void(void)> func);
+
+    bool done();
+
+    void waitUntillDone();
 };
 
 

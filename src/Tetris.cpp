@@ -634,7 +634,7 @@ void Tetris::smartestGameDetermineBest(Tetris& tetris, PieceName randomPiece, in
 // Strategy for Monte Carlo games
 void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, int &bestOrientation, int &bestPosition, double& avgScore, bool random) {
     double bestScore = 0;
-    ThreadPool threadPool(numEvals);
+    auto *threadPool = new ThreadPool(4);
 
     for (int i = 0; i < tetris.possibilities(randomPiece); ++i) {
         int orientation;
@@ -642,21 +642,27 @@ void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, i
         tetris.computeOrAndPos(randomPiece, orientation, position, i);
 
         double score = 0;
+        vector<Tetris> newBoards;
         for (int j = 0; j < numEvals; ++j) {
-            Tetris newBoard = tetris;
-            newBoard.dropPiece(randomPiece, orientation, position);
-            newBoard.clearFullRows();
+            newBoards.push_back(tetris);
+            newBoards.back().dropPiece(randomPiece, orientation, position);
+            newBoards.back().clearFullRows();
             if (random)
-                threadPool.runMethod(bind(&Tetris::playRandomGame, &newBoard, false));
-//                newBoard.playRandomGame(false);
+                threadPool->runMethod(bind(&Tetris::playRandomGame, &newBoards.back(), false));
+//                newBoards.back().playRandomGame(false);
             else
-                threadPool.runMethod(bind(&Tetris::playSmartGame, &newBoard, false));
-//                newBoard.playSmartGame(false);
-            score += newBoard.piececount;
+                threadPool->runMethod(bind(&Tetris::playSmartGame, &newBoards.back(), false));
+//                newBoards.back().playSmartGame(false);
             // If current score is way too low, stop iterating on this position
-            if (j != 0 && score/j < bestScore-avgScore/4)
-                break;
+//            if (j != 0 && score/j < bestScore-avgScore/4)
+//                break;
         }
+//        cout << "waiting..." << endl;
+//        while(!threadPool->done()){this_thread::sleep_for(chrono::milliseconds(10));}
+        threadPool->waitUntillDone();
+//        cout << "done" << endl;
+        for(auto newBoard : newBoards)
+            score += newBoard.piececount;
 
         if (score/numEvals > bestScore) {
             bestScore = score/numEvals;
@@ -665,6 +671,7 @@ void Tetris::verySmartGameDetermineBest(Tetris& tetris, PieceName randomPiece, i
             bestPosition = position;
         }
     }
+    delete threadPool;
 }//Tetris::verySmartGameDetermineBest
 
 // Get the score for this board to use in smart games, higher is worse
