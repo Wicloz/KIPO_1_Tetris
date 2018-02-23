@@ -10,6 +10,7 @@ boardSize = ['20', '10']
 playingTypes = ['Random', 'Smart', 'Smarter', 'Smartest']
 n = 30
 fileLocation = '../cmake-build-debug/KIPO_1_Tetris.exe'
+threadCount = 8
 
 # Functions
 def runAnalysis(args):
@@ -33,7 +34,7 @@ if __name__ == '__main__':
     results = np.empty((n, len(playingTypes)))
 
     # Play Tetris
-    pool = Pool()
+    pool = Pool(threadCount)
     inputs = [[type, seed] for type in playingTypes for seed in seeds]
 
     print()
