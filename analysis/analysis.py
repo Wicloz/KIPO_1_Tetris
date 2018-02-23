@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib as plt
 
+# Start
 print('**This script performs a comparison of 4 different AI playing styles doing Tetris.**')
 print('**The results are the number of turns per game.**')
 
@@ -16,16 +17,16 @@ fileLocation = '../tetris'
 # n random seeds
 seeds = [str(x) for x in sample(range(100000, 100000000), n)]
 
-# Results storage {random, smart, smarter, smartest}
+# Results storage
 results = np.empty((n, len(playingTypes)))
 
-# Play tetris
+# Play Tetris
 for type in playingTypes:
     for seed in seeds:
         output = sp.check_output([fileLocation, type, boardSize[0], boardSize[1], seed], universal_newlines=True)
         results[seeds.index(seed)][playingTypes.index(type)] = int((output.splitlines()[3]).split(' ', 1)[0])
 
-# Calculate avarage
+# Calculate average
 result = [sum(x) for x in zip(*results)]
 result[:] = [x/len(seeds) for x in result]
 
