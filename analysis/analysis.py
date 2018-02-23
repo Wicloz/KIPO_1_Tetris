@@ -16,7 +16,7 @@ fileLocation = '../tetris'
 # n random seeds
 seeds = [str(x) for x in sample(range(100000, 100000000), n)]
 
-# Results storage {random, smart, smarter}
+# Results storage {random, smart, smarter, smartest}
 results = np.empty((n, len(playingTypes)))
 
 # Play tetris
