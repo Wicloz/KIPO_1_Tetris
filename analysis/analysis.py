@@ -8,7 +8,7 @@ from multiprocessing import Pool
 # Parameters
 boardSize = ['20', '10']
 playingTypes = ['Random', 'Smart', 'Smarter', 'Smartest']
-n = 30
+n = 40
 fileLocation = '../cmake-build-debug/KIPO_1_Tetris.exe'
 threadCount = 8
 
@@ -53,5 +53,6 @@ if __name__ == '__main__':
     for x in playingTypes:
         print(x + ': ' + str(result[playingTypes.index(x)]))
 
-    pd.DataFrame(results, columns=playingTypes).plot.box()
+    plot = pd.DataFrame(results, columns=playingTypes).plot.box()
     plt.pyplot.show()
+    plot.get_figure().savefig('results.svg', format='svg')
