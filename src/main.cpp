@@ -1,4 +1,4 @@
-#include "../lib/Tetris.h"
+#include "../lib/tetris.h"
 
 int main(int argc, char *argv[]) {
 
@@ -19,13 +19,13 @@ int main(int argc, char *argv[]) {
         srand(atoi(argv[4]));
 
     if (string(argv[1]) == "Random" || string(argv[1]) == "random" || string(argv[1]) == "R" || string(argv[1]) == "r")
-        board.playRandomGame(false);
+        board.playRandomGame(true);
     else if (string(argv[1]) == "Smart" || string(argv[1]) == "smart" || string(argv[1]) == "S" || string(argv[1]) == "s")
-        board.playSmartGame(false);
+        board.playSmartGame(true);
     else if (string(argv[1]) == "Smarter" || string(argv[1]) == "smarter" || string(argv[1]) == "Ss" || string(argv[1]) == "ss")
-        board.playSmarterGame(false);
+        board.playSmarterGame(true);
     else if (string(argv[1]) == "Smartest" || string(argv[1]) == "smartest" || string(argv[1]) == "Sss" || string(argv[1]) == "sss")
-        board.playSmartestGame(false);
+        board.playSmartestGame(true);
 
     else {
         cerr << "Invalid playing type!" << endl;

@@ -64,7 +64,7 @@
 //                     XX                     X
 //                   
 
-#include "../lib/Tetris.h"
+#include "../lib/tetris.h"
 
 // default constructor
 Tetris::Tetris() {

@@ -2,7 +2,7 @@
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wextra
 # Lijst met objecten
-OBJECTS = Tetris.o
+OBJECTS = tetris.o
 
 all: tetris
 
@@ -17,4 +17,4 @@ tetris: $(addprefix obj/, $(OBJECTS)) obj/main.o
 # Target om alles schoon te maken
 clean:
 	rm -f ./tetris
-	rm -Rf ./obj
+	rm -rf ./obj
